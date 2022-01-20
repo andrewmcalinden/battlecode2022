@@ -4,7 +4,10 @@ import battlecode.common.Clock;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 
+import java.util.Random;
+
 public strictfp class RobotPlayer {
+    public static Random rng = new Random(48390);
 
     @SuppressWarnings("unused")
     public static void run(RobotController rc) throws GameActionException {

@@ -47,8 +47,26 @@ public class Communication {
     public static void removeLeadDeposit(RobotController rc, MapLocation loc) throws GameActionException{
         for (int i = MINER_START; i < MINER_STOP; i++){
             int read = rc.readSharedArray(i);
-            if (read != 0 && intToMapLocation(read).equals(loc)){
-                rc.writeSharedArray(i, 0);
+            if (read != 0){
+//                System.out.println("considering: " + read);
+//                System.out.println("looking for: " + loc.toString());
+                if (intToMapLocation(read).equals(loc)){
+                    rc.writeSharedArray(i, 0);
+                    //System.out.println("remove location " + loc.toString());
+                }
+
+            }
+        }
+    }
+
+    public static void goingToLeadDeposit(RobotController rc, MapLocation loc) throws GameActionException{
+        for (int i = MINER_START; i < MINER_STOP; i++){
+            int read = rc.readSharedArray(i);
+            if (read != 0){
+                if (intToMapLocation(read).equals(loc)){
+                    rc.writeSharedArray(i, read + 10000);
+                }
+
             }
         }
     }
