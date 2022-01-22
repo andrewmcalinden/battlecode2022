@@ -15,22 +15,20 @@ public class Miner {
         MapLocation [] m = rc.senseNearbyLocationsWithLead();
         boolean mined = false;
 
-        for (int i = 0; i < m.length; i++){
+        for (int i = 0; i < m.length; i++) {
             RobotInfo[] robots = rc.senseNearbyRobots(m[i], 10, Communication.myTeam);
             int miners = 0;
             int soldiers = 0;
-            for (int j = 0; j < robots.length; j++){
-                if (robots[j].type == RobotType.MINER){
+            for (int j = 0; j < robots.length; j++) {
+                if (robots[j].type == RobotType.MINER) {
                     miners++;
-                }
-                else if (robots[j].type == RobotType.SOLDIER){
+                } else if (robots[j].type == RobotType.SOLDIER) {
                     soldiers++;
                 }
             }
-            if (miners < MAX_MINERS){
+            if (miners < MAX_MINERS) {
                 Communication.addLeadDeposit(rc, m[i]);
-            }
-            else{
+            } else {
                 Communication.removeLeadDeposit(rc, m[i]);
             }
 
@@ -43,19 +41,26 @@ public class Miner {
             }
         }
 
-        if (!mined){ //need to move to a deposit
+//        RobotInfo[] enemies = rc.senseNearbyRobots(20, Communication.enemyTeam);
+//        for (int i = 0; i < enemies.length; i++) {
+//            RobotInfo[] friendlyRobots = rc.senseNearbyRobots(enemies[i].getLocation(), 10, Communication.myTeam);
+//            if (friendlyRobots.length < 7) {
+//                Communication.addHuntingLocation(rc, enemies[i].getLocation());
+//            }
+//        }
+
+        if (!mined) { //need to move to a deposit
             ArrayList<MapLocation> options = Communication.getLeadDeposits(rc);
-            if (options.size() == 0){
+            if (options.size() == 0) {
                 Movement.moveRandomly(rc);
-            }
-            else{
+            } else {
                 target = options.get(0);
                 MapLocation me = rc.getLocation();
 
                 int min = Integer.MAX_VALUE;
-                for (MapLocation cur : options){
-                    int dist = Math.abs(cur.x - me.x) + Math.abs(cur.y - me.y);
-                    if (dist < min){
+                for (MapLocation cur : options) {
+                    int dist = me.distanceSquaredTo(cur);
+                    if (dist < min) {
                         min = dist;
                         target = cur;
                     }
@@ -77,8 +82,5 @@ public class Miner {
                 }
             }
         }
-//        if (Clock.getBytecodesLeft() > 0){
-//            doTurn(rc);
-//        }
     }
 }
