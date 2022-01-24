@@ -27,11 +27,11 @@ public strictfp class RobotPlayer {
                 }
             }
             catch(GameActionException e){
-                System.out.println(rc.getType() + " Exception");
+                System.out.println(rc.getType() + " Exception on round " + rc.getRoundNum() + " at location " + rc.getLocation());
                 e.printStackTrace();
             }
             catch (Exception e) {
-                System.out.println(rc.getType() + " Exception");
+                System.out.println(rc.getType() + " Exception on round " + rc.getRoundNum() + " at location " + rc.getLocation());
                 e.printStackTrace();
             }
             finally {

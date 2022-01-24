@@ -111,18 +111,21 @@ public class Communication {
         }
     }
 
-    public static void goingToHuntingLocation(RobotController rc, MapLocation loc) throws GameActionException{
+    public static boolean goingToHuntingLocation(RobotController rc, MapLocation loc) throws GameActionException{
         for (int i = SOLDIER_START; i <= SOLDIER_STOP; i++){
             int read = rc.readSharedArray(i);
             if (read != 0){
                 if (intToMapLocation(read).equals(loc)){
-                    System.out.println("trying to change: " + loc);
-                    System.out.println("currently: " + read);
-                    rc.writeSharedArray(i, read + 10000);
+                    int newNum = read = 10000;
+                    if (newNum > 60000){
+                        return false;
+                    }
+                    rc.writeSharedArray(i, newNum);
+                    return true;
                 }
-
             }
         }
+        return true;
     }
 
     public static void notGoingToHuntingLocation(RobotController rc, MapLocation loc) throws GameActionException{
@@ -131,15 +134,17 @@ public class Communication {
             int read = rc.readSharedArray(i);
             if (read != 0){
                 if (intToMapLocation(read).equals(loc)){
-                    rc.writeSharedArray(i, read - 10000);
+                    if (read >= 20000){
+                        rc.writeSharedArray(i, read - 10000);
+                    }
                 }
-
             }
         }
     }
 
     public static MapLocation intToMapLocation(int i){
         String s = "" + i;
+        //System.out.println(s);
         int x = Integer.parseInt(s.substring(1, 3));
         int y = Integer.parseInt(s.substring(3));
         return new MapLocation(x, y);

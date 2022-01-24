@@ -9,7 +9,7 @@ public class Archon{
 
     public static void doTurn(RobotController rc) throws GameActionException {
         if (NO_MORE_MINERS == -1){
-            NO_MORE_MINERS = (int)(rc.getMapHeight() * rc.getMapWidth() * .001);
+            NO_MORE_MINERS = (int)(rc.getMapHeight() * rc.getMapWidth() * .003);
         }
 
         RobotInfo[] enemies = rc.senseNearbyRobots(20, Communication.enemyTeam);
@@ -75,6 +75,10 @@ public class Archon{
             }
             if (rc.canBuildRobot(RobotType.MINER, Direction.SOUTH)){
                 rc.buildRobot(RobotType.MINER, Direction.SOUTH);
+                numMiners++;
+            }
+            if (rc.canBuildRobot(RobotType.MINER, Direction.NORTHEAST)){
+                rc.buildRobot(RobotType.MINER, Direction.NORTHEAST);
                 numMiners++;
             }
             if (rc.canBuildRobot(RobotType.SOLDIER, Direction.WEST)){

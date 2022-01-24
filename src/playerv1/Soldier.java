@@ -81,10 +81,6 @@ public class Soldier {
                     MapLocation loc = cur.loc;
 
                     if (num < Communication.MAX_SOLDIERS){
-//                        System.out.println("me: " + rc.getLocation());
-//                        System.out.println("round: " + rc.getRoundNum());
-//                        System.out.println("location: " + loc);
-//                        System.out.println("num: " + num);
                         int dist = me.distanceSquaredTo(loc);
                         if (dist < min){
                             min = dist;
@@ -99,8 +95,14 @@ public class Soldier {
                 }
 
                 if (!target.equals(lastTarget)){
-                    Communication.goingToHuntingLocation(rc, target);
-                    Communication.notGoingToHuntingLocation(rc, lastTarget);
+                    if (Communication.goingToHuntingLocation(rc, target)){
+                        Communication.notGoingToHuntingLocation(rc, lastTarget);
+                    }
+                    else{
+                        target = null;
+                        Movement.moveRandomly(rc);
+                        return;
+                    }
                 }
 
                 if (Math.abs(rc.getLocation().x - target.x) > 1 || Math.abs(rc.getLocation().y - target.y) > 1) {
