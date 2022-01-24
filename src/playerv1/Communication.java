@@ -1,9 +1,7 @@
 package playerv1;
 
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
-import battlecode.common.Team;
+import battlecode.common.*;
+import javafx.util.Pair;
 
 import java.util.ArrayList;
 
@@ -17,23 +15,28 @@ public class Communication {
     public static Team myTeam = (Team.A).isPlayer() ? Team.A : Team.B;
     public static Team enemyTeam = myTeam.opponent();
 
-    public static ArrayList<MapLocation> getLeadDeposits(RobotController rc) throws GameActionException {
-        ArrayList<MapLocation> ans = new ArrayList<>();
+    public static final int MAX_MINERS = 5;
+    public static final int MAX_SOLDIERS = 5;
+
+    public static ArrayList<BetterLocation> getLeadDeposits(RobotController rc) throws GameActionException {
+        ArrayList<BetterLocation> ans = new ArrayList<>();
         for (int i = MINER_START; i <= MINER_STOP; i++){
             int read = rc.readSharedArray(i);
             if (read != 0){
-                ans.add(intToMapLocation(read));
+                int num = read / 10000;
+                ans.add(new BetterLocation(num, intToMapLocation(read)));
             }
         }
         return ans;
     }
 
-    public static ArrayList<MapLocation> getHuntingLocations(RobotController rc) throws GameActionException {
-        ArrayList<MapLocation> ans = new ArrayList<>();
+    public static ArrayList<BetterLocation> getHuntingLocations(RobotController rc) throws GameActionException {
+        ArrayList<BetterLocation> ans = new ArrayList<>();
         for (int i = SOLDIER_START; i <= SOLDIER_STOP; i++){
             int read = rc.readSharedArray(i);
             if (read != 0){
-                ans.add(intToMapLocation(read));
+                int num = read / 10000;
+                ans.add(new BetterLocation(num, intToMapLocation(read)));
             }
         }
         return ans;
@@ -46,9 +49,8 @@ public class Communication {
             if (val != 0 && intToMapLocation(val).equals(loc)){
                 return; //this deposit is already in the array
             }
-            if (val == 0) {
+            if (val == 0 && firstBlank == -1) {
                 firstBlank = i;
-                break;
             }
         }
         if (firstBlank != -1){
@@ -63,9 +65,8 @@ public class Communication {
             if (val != 0 && intToMapLocation(val).equals(loc)){
                 return; //this deposit is already in the array
             }
-            if (val == 0) {
+            if (val == 0 && firstBlank == -1) {
                 firstBlank = i;
-                break;
             }
         }
         if (firstBlank != -1){
@@ -115,7 +116,22 @@ public class Communication {
             int read = rc.readSharedArray(i);
             if (read != 0){
                 if (intToMapLocation(read).equals(loc)){
+                    System.out.println("trying to change: " + loc);
+                    System.out.println("currently: " + read);
                     rc.writeSharedArray(i, read + 10000);
+                }
+
+            }
+        }
+    }
+
+    public static void notGoingToHuntingLocation(RobotController rc, MapLocation loc) throws GameActionException{
+        if (loc == null) return;
+        for (int i = SOLDIER_START; i <= SOLDIER_STOP; i++){
+            int read = rc.readSharedArray(i);
+            if (read != 0){
+                if (intToMapLocation(read).equals(loc)){
+                    rc.writeSharedArray(i, read - 10000);
                 }
 
             }

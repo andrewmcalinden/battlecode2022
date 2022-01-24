@@ -6,9 +6,6 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Miner {
-    public static final int MAX_MINERS = 5;
-    public static final int MAX_SOLDIERS = 10;
-
     static MapLocation target;
 
     public static void doTurn(RobotController rc) throws GameActionException {
@@ -26,8 +23,11 @@ public class Miner {
                     soldiers++;
                 }
             }
-            if (miners < MAX_MINERS) {
+            if (miners < Communication.MAX_MINERS) {
                 Communication.addLeadDeposit(rc, m[i]);
+//                System.out.println("me: " + rc.getLocation());
+//                System.out.println("round: " + rc.getRoundNum());
+//                System.out.println("adding location: " + m[i]);
             } else {
                 Communication.removeLeadDeposit(rc, m[i]);
             }
@@ -41,28 +41,39 @@ public class Miner {
             }
         }
 
-//        RobotInfo[] enemies = rc.senseNearbyRobots(20, Communication.enemyTeam);
-//        for (int i = 0; i < enemies.length; i++) {
-//            RobotInfo[] friendlyRobots = rc.senseNearbyRobots(enemies[i].getLocation(), 10, Communication.myTeam);
-//            if (friendlyRobots.length < 7) {
-//                Communication.addHuntingLocation(rc, enemies[i].getLocation());
-//            }
-//        }
+        RobotInfo[] enemies = rc.senseNearbyRobots(20, Communication.enemyTeam);
+        for (int i = 0; i < enemies.length; i++){
+            RobotInfo[] friendlyRobots = rc.senseNearbyRobots(enemies[i].getLocation(), 10, Communication.myTeam);
+            int soldiers = 0;
+            for (int j = 0; j < friendlyRobots.length; j++){
+                if (friendlyRobots[j].type == RobotType.SOLDIER){
+                    soldiers++;
+                }
+            }
+            if (soldiers < Communication.MAX_SOLDIERS){
+                Communication.addHuntingLocation(rc, enemies[i].getLocation());
+            }
+
+            RobotInfo r = rc.senseRobotAtLocation(enemies[i].getLocation());
+            if (r == null || r.team == Communication.myTeam){
+                Communication.removeHuntingLocation(rc, enemies[i].getLocation());
+            }
+        }
 
         if (!mined) { //need to move to a deposit
-            ArrayList<MapLocation> options = Communication.getLeadDeposits(rc);
+            ArrayList<BetterLocation> options = Communication.getLeadDeposits(rc);
             if (options.size() == 0) {
                 Movement.moveRandomly(rc);
             } else {
-                target = options.get(0);
+                target = options.get(0).loc;
                 MapLocation me = rc.getLocation();
 
                 int min = Integer.MAX_VALUE;
-                for (MapLocation cur : options) {
-                    int dist = me.distanceSquaredTo(cur);
+                for (BetterLocation cur : options) {
+                    int dist = me.distanceSquaredTo(cur.loc);
                     if (dist < min) {
                         min = dist;
-                        target = cur;
+                        target = cur.loc;
                     }
                 }
 

@@ -7,10 +7,11 @@ import battlecode.common.RobotController;
 import java.util.Random;
 
 public strictfp class RobotPlayer {
-    public static Random rng = new Random(48390);
+    public static Random rng;
 
     @SuppressWarnings("unused")
     public static void run(RobotController rc) throws GameActionException {
+        rng = new Random(rc.getID());
         while(true){
             try{
                 switch(rc.getType()){

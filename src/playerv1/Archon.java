@@ -9,7 +9,49 @@ public class Archon{
 
     public static void doTurn(RobotController rc) throws GameActionException {
         if (NO_MORE_MINERS == -1){
-            NO_MORE_MINERS = (int)(rc.getMapHeight() * rc.getMapWidth() * .01);
+            NO_MORE_MINERS = (int)(rc.getMapHeight() * rc.getMapWidth() * .001);
+        }
+
+        RobotInfo[] enemies = rc.senseNearbyRobots(20, Communication.enemyTeam);
+        boolean attacked = false;
+
+        for (int i = 0; i < enemies.length; i++){
+            RobotInfo[] friendlyRobots = rc.senseNearbyRobots(enemies[i].getLocation(), 10, Communication.myTeam);
+            int soldiers = 0;
+            for (int j = 0; j < friendlyRobots.length; j++){
+                if (friendlyRobots[j].type == RobotType.SOLDIER){
+                    soldiers++;
+                }
+            }
+            if (soldiers < Communication.MAX_SOLDIERS){
+                Communication.addHuntingLocation(rc, enemies[i].getLocation());
+            }
+
+            RobotInfo r = rc.senseRobotAtLocation(enemies[i].getLocation());
+            if (r == null || r.team == Communication.myTeam){
+                Communication.removeHuntingLocation(rc, enemies[i].getLocation());
+            }
+        }
+
+        MapLocation [] m = rc.senseNearbyLocationsWithLead();
+
+        for (int i = 0; i < m.length; i++) {
+            RobotInfo[] robots = rc.senseNearbyRobots(m[i], 10, Communication.myTeam);
+            int miners = 0;
+            for (int j = 0; j < robots.length; j++) {
+                if (robots[j].type == RobotType.MINER) {
+                    miners++;
+                }
+            }
+
+            if (miners < Communication.MAX_MINERS) {
+                Communication.addLeadDeposit(rc, m[i]);
+            } else {
+                Communication.removeLeadDeposit(rc, m[i]);
+            }
+            if (rc.senseLead(m[i]) == 0) {
+                Communication.removeLeadDeposit(rc, m[i]);
+            }
         }
 
         if (numMiners >= NO_MORE_MINERS ){
@@ -35,13 +77,11 @@ public class Archon{
                 rc.buildRobot(RobotType.MINER, Direction.SOUTH);
                 numMiners++;
             }
-            if (rc.canBuildRobot(RobotType.MINER, Direction.WEST)){
-                rc.buildRobot(RobotType.MINER, Direction.WEST);
-                numMiners++;
+            if (rc.canBuildRobot(RobotType.SOLDIER, Direction.WEST)){
+                rc.buildRobot(RobotType.SOLDIER, Direction.WEST);
             }
-            if (rc.canBuildRobot(RobotType.MINER, Direction.EAST)){
-                rc.buildRobot(RobotType.MINER, Direction.EAST);
-                numMiners++;
+            if (rc.canBuildRobot(RobotType.SOLDIER, Direction.EAST)){
+                rc.buildRobot(RobotType.SOLDIER, Direction.EAST);
             }
         }
 

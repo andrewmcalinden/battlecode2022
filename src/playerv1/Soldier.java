@@ -3,14 +3,23 @@ package playerv1;
 import battlecode.common.*;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class Soldier {
-    public static final int MAX_MINERS = 5;
-    public static final int MAX_SOLDIERS = 10;
-
     static MapLocation target;
 
     public static void doTurn(RobotController rc) throws GameActionException {
+        ArrayList<BetterLocation> options = Communication.getHuntingLocations(rc);
+        for (BetterLocation cur : options){
+            MapLocation loc = cur.loc;
+            if (rc.getLocation().distanceSquaredTo(loc) < rc.getType().visionRadiusSquared){
+                RobotInfo r = rc.senseRobotAtLocation(loc);
+                if (r == null || r.team == Communication.myTeam){
+                    Communication.removeHuntingLocation(rc, loc);
+                }
+            }
+        }
+
         RobotInfo[] enemies = rc.senseNearbyRobots(20, Communication.enemyTeam);
         boolean attacked = false;
 
@@ -22,7 +31,7 @@ public class Soldier {
                     soldiers++;
                 }
             }
-            if (soldiers < MAX_SOLDIERS){
+            if (soldiers < Communication.MAX_SOLDIERS){
                 Communication.addHuntingLocation(rc, enemies[i].getLocation());
             }
 
@@ -31,25 +40,13 @@ public class Soldier {
                 attacked = true;
             }
 
-            if (rc.canSenseRobotAtLocation(enemies[i].getLocation())){
-                RobotInfo r = rc.senseRobotAtLocation(enemies[i].getLocation());
-                if (r != null && r.team == Communication.myTeam){
-                    Communication.removeHuntingLocation(rc, enemies[i].getLocation());
-                }
-            }
-            else{
+            RobotInfo r = rc.senseRobotAtLocation(enemies[i].getLocation());
+            if (r == null || r.team == Communication.myTeam){
                 Communication.removeHuntingLocation(rc, enemies[i].getLocation());
             }
-
-            RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(20, Communication.enemyTeam);
-            if (nearbyEnemies.length == 0){
-                Communication.removeHuntingLocation(rc, enemies[i].getLocation());
-            }
-
         }
 
         MapLocation [] m = rc.senseNearbyLocationsWithLead();
-
         for (int i = 0; i < m.length; i++){
             RobotInfo[] robots = rc.senseNearbyRobots(m[i], 10, Communication.myTeam);
             int miners = 0;
@@ -58,7 +55,7 @@ public class Soldier {
                     miners++;
                 }
             }
-            if (miners < MAX_MINERS){
+            if (miners < Communication.MAX_MINERS){
                 Communication.addLeadDeposit(rc, m[i]);
             }
             else{
@@ -71,33 +68,39 @@ public class Soldier {
         }
 
         if (!attacked){ //need to move to an enemy
-            ArrayList<MapLocation> options = Communication.getHuntingLocations(rc);
             if (options.size() == 0){
                 Movement.moveRandomly(rc);
             }
             else{
-                for (MapLocation cur : options){
-                    //remove it if we sense anything other than an enemy robot
-                    if (rc.canSenseRobotAtLocation(cur)){
-                        RobotInfo r = rc.senseRobotAtLocation(cur);
-                        if (r != null && r.team == Communication.myTeam){
-                            Communication.removeHuntingLocation(rc, cur);
+                MapLocation lastTarget = target;
+                MapLocation me = rc.getLocation();
+
+                int min = Integer.MAX_VALUE;
+                for (BetterLocation cur : options){
+                    int num = cur.num;
+                    MapLocation loc = cur.loc;
+
+                    if (num < Communication.MAX_SOLDIERS){
+//                        System.out.println("me: " + rc.getLocation());
+//                        System.out.println("round: " + rc.getRoundNum());
+//                        System.out.println("location: " + loc);
+//                        System.out.println("num: " + num);
+                        int dist = me.distanceSquaredTo(loc);
+                        if (dist < min){
+                            min = dist;
+                            target = loc;
                         }
                     }
-//                    else{
-//                        Communication.removeHuntingLocation(rc, cur);
-//                    }
+                }
 
-                    target = options.get(0);
-                    MapLocation me = rc.getLocation();
+                if (target == null){
+                    Movement.moveRandomly(rc);
+                    return;
+                }
 
-                    int min = Integer.MAX_VALUE;
-
-                    int dist = me.distanceSquaredTo(cur);
-                    if (dist < min){
-                        min = dist;
-                        target = cur;
-                    }
+                if (!target.equals(lastTarget)){
+                    Communication.goingToHuntingLocation(rc, target);
+                    Communication.notGoingToHuntingLocation(rc, lastTarget);
                 }
 
                 if (Math.abs(rc.getLocation().x - target.x) > 1 || Math.abs(rc.getLocation().y - target.y) > 1) {
@@ -115,6 +118,10 @@ public class Soldier {
                     }
                 }
             }
+        }
+        else{
+            Communication.notGoingToHuntingLocation(rc, target);
+            target = null;
         }
     }
 }
