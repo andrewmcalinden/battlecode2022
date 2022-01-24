@@ -3,7 +3,6 @@ package playerv1;
 import battlecode.common.*;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 public class Soldier {
     static MapLocation target;

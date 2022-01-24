@@ -3,7 +3,6 @@ package playerv1;
 import battlecode.common.*;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 public class Miner {
     static MapLocation target;

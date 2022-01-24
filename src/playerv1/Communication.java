@@ -1,7 +1,6 @@
 package playerv1;
 
 import battlecode.common.*;
-import javafx.util.Pair;
 
 import java.util.ArrayList;
 
