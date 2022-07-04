@@ -1,6 +1,6 @@
-# Battlecode 2022 Scaffold
+Player for MIT's Battlecode 2022 competition: https://play.battlecode.org/
 
-This is the Battlecode 2022 scaffold, containing an `examplefuncsplayer`. Read https://play.battlecode.org/getting-started!
+https://user-images.githubusercontent.com/52133386/177097252-390d55a5-922b-4d42-a7fb-9bc9f4cb33cc.mp4
 
 ### Project Structure
 
@@ -32,4 +32,3 @@ This is the Battlecode 2022 scaffold, containing an `examplefuncsplayer`. Read h
     Runs a game with the settings in gradle.properties
 - `./gradlew update`
     Update to the newest version! Run every so often
-
